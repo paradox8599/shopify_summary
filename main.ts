@@ -1,15 +1,11 @@
 import fs from "fs";
-import {
-  getOrders,
-  parseOrders,
-  type OrderBulkResult,
-  type Product,
-} from "./src/shopify/orders";
+import { getOrders, parseOrders, type Product } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
 
 type ProductData = {
   id: string;
   title: string;
+  type: string;
   price: number;
   qty: number;
   total: number;
@@ -25,8 +21,9 @@ type ProductTypeData = {
 };
 
 async function main() {
-  const lines = await pollForBulkResult<OrderBulkResult>({});
-  // const lines = await getOrders();
+  await pollForBulkResult<any>({});
+  // const lines = await pollForBulkResult<OrderBulkResult>({});
+  const lines = await getOrders();
   const { line_items } = parseOrders(lines);
 
   const product_dup_list: Product[] = [];
@@ -42,6 +39,7 @@ async function main() {
     const product_data = products.get(product.id) ?? {
       id: product.id,
       title: product.title,
+      type: product.productType,
       qty: 0,
       total: 0,
       price: product.price,
@@ -116,18 +114,28 @@ async function main() {
 
   // csv
 
-  const prod_csv = toCSV({
-    keys: ["id", "title", "qty", "total", "price"],
-    values: Array.from(products.values()),
-  });
-  const type_csv = toCSV({
-    keys: ["name", "qty", "total", "median", "average"],
-    values: types_data,
-  });
   // create out dir
   fs.mkdirSync("./out", { recursive: true });
-  fs.writeFileSync("./out/products.csv", prod_csv);
-  fs.writeFileSync("./out/types.csv", type_csv);
+
+  // NOTE: products.csv
+  fs.writeFileSync(
+    "./out/products.csv",
+    toCSV({
+      keys: ["id", "title", "type", "qty", "total", "price"],
+      values: Array.from(products.values()),
+    }),
+  );
+
+  // NOTE: product_types.csv
+  fs.writeFileSync(
+    "./out/product_types.csv",
+    toCSV({
+      keys: ["name", "qty", "total", "median", "average"],
+      values: types_data,
+    }),
+  );
+
+  // NOTE: stats.csv
   fs.writeFileSync(
     "out/stats.csv",
     toCSV({

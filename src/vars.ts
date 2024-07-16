@@ -1,6 +1,6 @@
 export const SHOPIFY = {
-  storeName: process.env.SHOPIFY_STORE_NAME,
-  adminToken: process.env.SHOPIFY_ADMIN_TOKEN,
+  storeName: process.env.SHOPIFY_STORE_NAME!,
+  adminToken: process.env.SHOPIFY_ADMIN_TOKEN!,
 };
 
 export const SHOPIFY_API = `https://${SHOPIFY.storeName}.myshopify.com/admin/api/2024-04/graphql.json`;
