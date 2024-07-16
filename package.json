@@ -1,0 +1,16 @@
+{
+  "name": "shopify_order_summary",
+  "module": "main.ts",
+  "type": "module",
+  "scripts": {
+    "main": "bun run main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "eslint": "^9.7.0",
+    "prettier": "^3.3.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
