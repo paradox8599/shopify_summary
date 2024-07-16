@@ -178,3 +178,5 @@ dist
 **/*.json
 !package.json
 !tsconfig.json
+*.csv
+/out/*

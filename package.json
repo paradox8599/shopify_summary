@@ -3,7 +3,8 @@
   "module": "main.ts",
   "type": "module",
   "scripts": {
-    "main": "bun run main.ts"
+    "main": "bun run main.ts",
+    "debug": "bun run --inspect-brk main.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
