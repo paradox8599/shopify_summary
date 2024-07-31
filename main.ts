@@ -6,10 +6,12 @@ import {
   type Variant,
 } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
+import { getCountryCodes } from "./src/shopify/shop";
 
 type VariantData = {
   id: string;
   product_id: string;
+  g_id: string;
   title: string;
   price: number;
   type: string;
@@ -28,7 +30,15 @@ type ProductTypeData = {
 
 async function main() {
   await pollForBulkResult<any>({});
-  const useCache = true;
+  const countryCodes = await getCountryCodes();
+  if (countryCodes.length !== 1) {
+    throw new Error(
+      `Expected 1 country code, got ${countryCodes.length}: ${countryCodes}`,
+    );
+  }
+  const countryCode = countryCodes[0];
+
+  const useCache = false;
   const lines = useCache
     ? await pollForBulkResult<OrderBulkResult>({})
     : await getOrders();
@@ -48,6 +58,7 @@ async function main() {
     const variant_data = variants.get(line.variant.id) ?? {
       id: v.id,
       product_id: p.id,
+      g_id: `shopify_${countryCode}_${p.id.split("/").pop()}_${v.id.split("/").pop()}`,
       title: p.title,
       type: p.productType,
       qty: 0,
@@ -129,7 +140,16 @@ async function main() {
   fs.writeFileSync(
     "./out/variants.csv",
     toCSV({
-      keys: ["id", "product_id", "title", "type", "qty", "total", "price"],
+      keys: [
+        "id",
+        "product_id",
+        "g_id",
+        "title",
+        "type",
+        "qty",
+        "total",
+        "price",
+      ],
       values: Array.from(variants.values()),
     }),
   );

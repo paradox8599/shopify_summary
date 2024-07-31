@@ -5,8 +5,6 @@ export const SHOPIFY = {
 
 export const SHOPIFY_API = `https://${SHOPIFY.storeName}.myshopify.com/admin/api/2024-04/graphql.json`;
 
-console.log(SHOPIFY_API);
-
 export const DEV = process.env.NODE_ENV === "dev";
 
 export enum Emoji {
