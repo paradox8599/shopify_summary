@@ -54,10 +54,8 @@ async function main() {
       total: 0,
       price: v.price,
     };
-    console.log(variant_data);
     variant_data.qty += line.quantity;
     variant_data.total += v.price * line.quantity;
-    console.log(variant_data);
 
     variants.set(v.id, variant_data);
 
@@ -73,12 +71,13 @@ async function main() {
 
     type_data.qty += line.quantity;
     type_data.total += v.price * line.quantity;
+
     for (let i = 0; i < line.quantity; i++) {
       type_data.variants.push(v);
       vairant_dup_list.push(v);
     }
 
-    product_types.set(p.id, type_data);
+    product_types.set(p.productType, type_data);
   }
 
   for (const type_name of product_types.keys()) {
@@ -91,8 +90,8 @@ async function main() {
   const variant_list: Variant[] = vairant_dup_list.toSorted(
     (a, b) => a.price - b.price,
   );
-  const prod_mid_index: number = Math.floor(variant_list.length / 2);
-  const variant_median: number = variant_list[prod_mid_index]?.price ?? 0;
+  const variant_mid_index: number = Math.floor(variant_list.length / 2);
+  const variant_median: number = variant_list[variant_mid_index]?.price ?? 0;
 
   const variant_average: number = variant_list.reduce(
     (total, p) => total + p.price,
