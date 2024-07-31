@@ -1,3 +1,4 @@
+import fs from "fs";
 import { bulkQuery, pollForBulkResult } from "./bulk";
 
 export type Order = { id: string; lineItem: LineItem[] };
@@ -8,29 +9,26 @@ export type Product = {
   id: string;
   title: string;
   productType: string;
+};
+
+export type Variant = {
+  id: string;
   price: number;
-  compareAtPriceRange: {
-    maxVariantCompareAtPrice: Price;
-    minVariantCompareAtPrice: Price;
-  };
-  priceRangeV2: {
-    maxVariantPrice: Price;
-    minVariantPrice: Price;
-  };
+  product: Product;
 };
 
 export type LineItem = {
   id: string;
   quantity: number;
   unfulfilledOriginalTotalSet: { presentmentMoney: Price; shopMoney: Price };
-  product: Product;
+  variant: Variant;
   __parentId: string;
 };
 
 export type OrderBulkResult = Order | LineItem;
 
 function isOrderLineItem(line: OrderBulkResult): line is LineItem {
-  return "product" in line;
+  return "variant" in line;
 }
 
 function isOrder(line: OrderBulkResult): line is Order {
@@ -60,29 +58,13 @@ export async function getOrders() {
                         currencyCode
                       }
                     }
-                    product {
+                    variant {
                       id
-                      title
-                      productType
-                      compareAtPriceRange {
-                        maxVariantCompareAtPrice {
-                          amount
-                          currencyCode
-                        }
-                        minVariantCompareAtPrice {
-                          amount
-                          currencyCode
-                        }
-                      }
-                      priceRangeV2 {
-                        maxVariantPrice {
-                          amount
-                          currencyCode
-                        }
-                        minVariantPrice {
-                          amount
-                          currencyCode
-                        }
+                      price
+                      product {
+                        id
+                        title
+                        productType
                       }
                     }
                   }
@@ -110,13 +92,10 @@ export function parseOrders(lines: OrderBulkResult[]) {
       ...l,
       quantity: l.quantity ?? 0,
     }))
-    .filter((l) => l.product !== null);
-  // products
-  const products = line_items.map((l) => l.product) as Product[];
+    .filter((l) => l.variant !== null);
 
-  products.forEach((p: Product) => {
-    p.price = Number.parseFloat(p.priceRangeV2.maxVariantPrice.amount);
-  });
+  // variants
+  const variants = line_items.map((l) => l.variant);
 
   for (const line of line_items) {
     const order = orders_obj[line.__parentId];
@@ -124,5 +103,5 @@ export function parseOrders(lines: OrderBulkResult[]) {
     order.lineItem.push(line);
   }
 
-  return { orders, orders_obj, line_items, products };
+  return { orders, orders_obj, line_items, products: variants };
 }

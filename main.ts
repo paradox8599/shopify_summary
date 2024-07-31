@@ -1,12 +1,18 @@
 import fs from "fs";
-import { getOrders, parseOrders, type Product } from "./src/shopify/orders";
+import {
+  getOrders,
+  parseOrders,
+  type OrderBulkResult,
+  type Variant,
+} from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
 
-type ProductData = {
+type VariantData = {
   id: string;
+  product_id: string;
   title: string;
-  type: string;
   price: number;
+  type: string;
   qty: number;
   total: number;
 };
@@ -17,75 +23,78 @@ type ProductTypeData = {
   total: number;
   median: number;
   average: number;
-  products: Product[];
+  variants: Variant[];
 };
 
 async function main() {
   await pollForBulkResult<any>({});
-  // const lines = await pollForBulkResult<OrderBulkResult>({});
-  const lines = await getOrders();
+  const useCache = true;
+  const lines = useCache
+    ? await pollForBulkResult<OrderBulkResult>({})
+    : await getOrders();
   const { line_items } = parseOrders(lines);
 
-  const product_dup_list: Product[] = [];
-  const products = new Map<string, ProductData>();
+  const vairant_dup_list: Variant[] = [];
+  const variants = new Map<string, VariantData>();
   const product_types = new Map<string, ProductTypeData>();
 
   for (let i = 0; i < line_items.length; i++) {
     const line = line_items[i];
     process.stdout.write(`\r${i}/${line_items.length}`);
-    const product = line.product;
+    const v = line.variant;
+    const p = v.product;
 
     // product
-    const product_data = products.get(product.id) ?? {
-      id: product.id,
-      title: product.title,
-      type: product.productType,
+    const variant_data = variants.get(line.variant.id) ?? {
+      id: v.id,
+      product_id: p.id,
+      title: p.title,
+      type: p.productType,
       qty: 0,
       total: 0,
-      price: product.price,
+      price: v.price,
     };
-    console.log(product_data);
-    product_data.qty += line.quantity;
-    product_data.total += product.price * line.quantity;
-    console.log(product_data);
+    console.log(variant_data);
+    variant_data.qty += line.quantity;
+    variant_data.total += v.price * line.quantity;
+    console.log(variant_data);
 
-    products.set(product.id, product_data);
+    variants.set(v.id, variant_data);
 
     // product type
-    const type_data = product_types.get(product.productType) ?? {
-      name: product.productType,
+    const type_data = product_types.get(p.productType) ?? {
+      name: p.productType,
       qty: 0,
       total: 0,
       median: 0,
       average: 0,
-      products: [],
+      variants: [],
     };
 
     type_data.qty += line.quantity;
-    type_data.total += product.price * line.quantity;
+    type_data.total += v.price * line.quantity;
     for (let i = 0; i < line.quantity; i++) {
-      type_data.products.push(product);
-
-      product_dup_list.push(product);
+      type_data.variants.push(v);
+      vairant_dup_list.push(v);
     }
 
-    product_types.set(product.id, type_data);
+    product_types.set(p.id, type_data);
   }
 
   for (const type_name of product_types.keys()) {
     const type_data = product_types.get(type_name)!;
-    const mid_index = Math.floor(type_data.products.length / 2);
-    type_data.median = type_data.products[mid_index]?.price ?? 0;
+    const mid_index = Math.floor(type_data.variants.length / 2);
+    type_data.median = type_data.variants[mid_index]?.price ?? 0;
     type_data.average = type_data.total / type_data.qty;
   }
 
-  const product_list: Product[] = product_dup_list.toSorted(
+  const variant_list: Variant[] = vairant_dup_list.toSorted(
     (a, b) => a.price - b.price,
   );
-  const prod_mid_index: number = Math.floor(product_list.length / 2);
-  const prod_median: number = product_list[prod_mid_index]?.price ?? 0;
+  const prod_mid_index: number = Math.floor(variant_list.length / 2);
+  const variant_median: number = variant_list[prod_mid_index]?.price ?? 0;
 
-  const prod_average: number = product_list.reduce(
+  const variant_average: number = variant_list.reduce(
     (total, p) => total + p.price,
     0,
   );
@@ -117,12 +126,12 @@ async function main() {
   // create out dir
   fs.mkdirSync("./out", { recursive: true });
 
-  // NOTE: products.csv
+  // NOTE: variants.csv
   fs.writeFileSync(
-    "./out/products.csv",
+    "./out/variants.csv",
     toCSV({
-      keys: ["id", "title", "type", "qty", "total", "price"],
-      values: Array.from(products.values()),
+      keys: ["id", "product_id", "title", "type", "qty", "total", "price"],
+      values: Array.from(variants.values()),
     }),
   );
 
