@@ -6,7 +6,7 @@ import {
   type Variant,
 } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
-import { getCountryCodes } from "./src/shopify/shop";
+import { COUNTRY_CODE } from "./src/vars";
 
 type VariantData = {
   id: string;
@@ -30,13 +30,13 @@ type ProductTypeData = {
 
 async function main() {
   await pollForBulkResult<any>({});
-  const countryCodes = await getCountryCodes();
-  if (countryCodes.length !== 1) {
-    throw new Error(
-      `Expected 1 country code, got ${countryCodes.length}: ${countryCodes}`,
-    );
-  }
-  const countryCode = countryCodes[0];
+  // const countryCodes = await getCountryCodes();
+  // if (countryCodes.length !== 1) {
+  //   throw new Error(
+  //     `Expected 1 country code, got ${countryCodes.length}: ${countryCodes}`,
+  //   );
+  // }
+  const countryCode = COUNTRY_CODE;
 
   const useCache = false;
   const lines = useCache
