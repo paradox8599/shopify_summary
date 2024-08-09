@@ -97,7 +97,6 @@ export async function getOrders() {
 
 export function parseOrders(lines: OrderBulkResult[]) {
   const orders: { [key: string]: Order } = {};
-  debugger;
   for (const line of lines) {
     // order
     if (isOrder(line)) {
@@ -114,7 +113,6 @@ export function parseOrders(lines: OrderBulkResult[]) {
   const oids = Object.keys(orders);
   for (const oid of oids) {
     const order = orders[oid]!;
-    debugger;
     if (
       SALES_CHANNEL &&
       order?.channelInformation?.channelDefinition?.channelName !==
