@@ -1,7 +1,16 @@
-import fs from "fs";
+import { SALES_CHANNEL } from "../vars";
 import { bulkQuery, pollForBulkResult } from "./bulk";
 
-export type Order = { id: string; lineItem: LineItem[] };
+export type Order = {
+  id: string;
+  channelInformation: ChannelInformation;
+  lineItems: LineItem[];
+};
+
+export type ChannelInformation = {
+  channelDefinition: { channelName: string };
+  __parentId: string;
+};
 
 export type Price = { amount: string; currencyCode: string };
 
@@ -43,6 +52,11 @@ export async function getOrders() {
           edges {
             node {
               id
+              channelInformation {
+                channelDefinition {
+                  channelName
+                }
+              }
               lineItems {
                 edges {
                   node {
@@ -82,26 +96,33 @@ export async function getOrders() {
 }
 
 export function parseOrders(lines: OrderBulkResult[]) {
-  const orders = lines.filter(isOrder);
-  const orders_obj = Object.fromEntries(orders.map((o) => [o.id, o]));
+  const orders: { [key: string]: Order } = {};
   debugger;
-
-  const line_items = lines
-    .filter(isOrderLineItem)
-    .map((l) => ({
-      ...l,
-      quantity: l.quantity ?? 0,
-    }))
-    .filter((l) => l.variant !== null);
-
-  // variants
-  const variants = line_items.map((l) => l.variant);
-
-  for (const line of line_items) {
-    const order = orders_obj[line.__parentId];
-    if (!order.lineItem) order.lineItem = [];
-    order.lineItem.push(line);
+  for (const line of lines) {
+    // order
+    if (isOrder(line)) {
+      line.lineItems = [];
+      orders[line.id] = line;
+    }
+    // line item
+    else if (isOrderLineItem(line) && line.variant !== null) {
+      line.quantity ??= 0;
+      orders[line.__parentId].lineItems.push(line);
+    }
   }
 
-  return { orders, orders_obj, line_items, products: variants };
+  const oids = Object.keys(orders);
+  for (const oid of oids) {
+    const order = orders[oid]!;
+    debugger;
+    if (
+      SALES_CHANNEL &&
+      order?.channelInformation?.channelDefinition?.channelName !==
+        SALES_CHANNEL
+    ) {
+      delete orders[oid];
+    }
+  }
+
+  return { orders };
 }

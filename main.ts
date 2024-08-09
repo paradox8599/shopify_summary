@@ -6,7 +6,7 @@ import {
   type Variant,
 } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
-import { COUNTRY_CODE } from "./src/vars";
+import { COUNTRY_CODE, SALES_CHANNEL } from "./src/vars";
 
 type VariantData = {
   id: string;
@@ -42,7 +42,9 @@ async function main() {
   const lines = useCache
     ? await pollForBulkResult<OrderBulkResult>({})
     : await getOrders();
-  const { line_items } = parseOrders(lines);
+  const { orders } = parseOrders(lines);
+
+  const line_items = Object.values(orders).flatMap((o) => o.lineItems);
 
   const vairant_dup_list: Variant[] = [];
   const variants = new Map<string, VariantData>();
@@ -138,7 +140,7 @@ async function main() {
 
   // NOTE: variants.csv
   fs.writeFileSync(
-    "./out/variants.csv",
+    `./out/variants${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
     toCSV({
       keys: [
         "id",
@@ -156,7 +158,7 @@ async function main() {
 
   // NOTE: product_types.csv
   fs.writeFileSync(
-    "./out/product_types.csv",
+    `./out/product_types${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
     toCSV({
       keys: ["name", "qty", "total", "median", "average"],
       values: types_data,
@@ -165,7 +167,7 @@ async function main() {
 
   // NOTE: stats.csv
   fs.writeFileSync(
-    "out/stats.csv",
+    `out/stats${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
     toCSV({
       values: [
         {

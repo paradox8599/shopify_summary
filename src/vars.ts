@@ -7,6 +7,7 @@ export const SHOPIFY_API = `https://${SHOPIFY.storeName}.myshopify.com/admin/api
 
 export const DEV = process.env.NODE_ENV === "dev";
 export const COUNTRY_CODE = process.env.COUNTRY_CODE || "AU";
+export const SALES_CHANNEL = process.env.SALES_CHANNEL;
 
 export enum Emoji {
   time = "⏱️ ",
