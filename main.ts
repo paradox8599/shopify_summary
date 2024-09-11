@@ -7,6 +7,7 @@ import {
 } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
 import { COUNTRY_CODE, SALES_CHANNEL } from "./src/vars";
+import { toCSV } from "./src/csv";
 
 type VariantData = {
   id: string;
@@ -100,16 +101,16 @@ async function main() {
     type_data.average = type_data.total / type_data.qty;
   }
 
-  const variant_list: Variant[] = vairant_dup_list.toSorted(
-    (a, b) => a.price - b.price,
-  );
-  const variant_mid_index: number = Math.floor(variant_list.length / 2);
-  const variant_median: number = variant_list[variant_mid_index]?.price ?? 0;
+  // const variant_list: Variant[] = vairant_dup_list.toSorted(
+  //   (a, b) => a.price - b.price,
+  // );
+  // const variant_mid_index: number = Math.floor(variant_list.length / 2);
+  // const variant_median: number = variant_list[variant_mid_index]?.price ?? 0;
 
-  const variant_average: number = variant_list.reduce(
-    (total, p) => total + p.price,
-    0,
-  );
+  // const variant_average: number = variant_list.reduce(
+  //   (total, p) => total + p.price,
+  //   0,
+  // );
 
   const types_data: ProductTypeData[] = Array.from(product_types.values()).sort(
     (a, b) => a.total - b.total,
@@ -187,30 +188,3 @@ async function main() {
   );
 }
 main();
-
-function toCSV({
-  keys,
-  values,
-}: {
-  keys: string[];
-  values: { [key: string]: any }[];
-}) {
-  const csv = [keys.join(",")];
-  for (const value of values) {
-    const row = [];
-    for (const key of keys) {
-      let val = value[key];
-      switch (typeof val) {
-        case "string":
-          val = val.replace(/"/g, '"');
-          val = `"${val}"`;
-          break;
-        case "number":
-          val = Number.parseFloat(val.toFixed(2));
-      }
-      row.push(val);
-    }
-    csv.push(row.join(","));
-  }
-  return csv.join("\n");
-}

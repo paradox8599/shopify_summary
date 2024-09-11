@@ -21,4 +21,4 @@ export enum Emoji {
   writing = "✏️",
 }
 
-export const verbose = true;
+export const verbose = false;
