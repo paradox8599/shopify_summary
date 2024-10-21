@@ -119,7 +119,7 @@ export function parseOrders(lines: OrderBulkResult[]) {
     if (
       SALES_CHANNEL &&
       order?.channelInformation?.channelDefinition?.channelName !==
-        SALES_CHANNEL
+      SALES_CHANNEL
     ) {
       delete orders[oid];
     }
@@ -128,8 +128,8 @@ export function parseOrders(lines: OrderBulkResult[]) {
   for (const oid of Object.keys(orders)) {
     const order = orders[oid];
     if (
-      order.createdAt < DATE_RANGE.start ||
-      order.createdAt > DATE_RANGE.end
+      order.createdAt.getTime() < DATE_RANGE.start.getTime() ||
+      order.createdAt.getTime() > DATE_RANGE.end.getTime()
     ) {
       delete orders[oid];
     }
