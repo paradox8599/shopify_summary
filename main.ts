@@ -6,7 +6,7 @@ import {
   type Variant,
 } from "./src/shopify/orders";
 import { pollForBulkResult } from "./src/shopify/bulk";
-import { COUNTRY_CODE, SALES_CHANNEL } from "./src/vars";
+import { COUNTRY_CODE, DATE_RANGE_STR, SALES_CHANNEL } from "./src/vars";
 import { toCSV } from "./src/csv";
 
 type VariantData = {
@@ -141,7 +141,7 @@ async function main() {
 
   // NOTE: variants.csv
   fs.writeFileSync(
-    `./out/variants${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
+    `./out/variants${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       keys: [
         "id",
@@ -159,7 +159,7 @@ async function main() {
 
   // NOTE: product_types.csv
   fs.writeFileSync(
-    `./out/product_types${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
+    `./out/product_types${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       keys: ["name", "qty", "total", "median", "average"],
       values: types_data,
@@ -168,7 +168,7 @@ async function main() {
 
   // NOTE: stats.csv
   fs.writeFileSync(
-    `out/stats${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}.csv`,
+    `out/stats${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       values: [
         {

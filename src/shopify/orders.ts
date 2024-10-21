@@ -1,8 +1,9 @@
-import { SALES_CHANNEL } from "../vars";
+import { DATE_RANGE, SALES_CHANNEL } from "../vars";
 import { bulkQuery, pollForBulkResult } from "./bulk";
 
 export type Order = {
   id: string;
+  createdAt: Date;
   channelInformation: ChannelInformation;
   lineItems: LineItem[];
 };
@@ -52,6 +53,7 @@ export async function getOrders() {
           edges {
             node {
               id
+              createdAt
               channelInformation {
                 channelDefinition {
                   channelName
@@ -101,6 +103,7 @@ export function parseOrders(lines: OrderBulkResult[]) {
     // order
     if (isOrder(line)) {
       line.lineItems = [];
+      line.createdAt = new Date(line.createdAt);
       orders[line.id] = line;
     }
     // line item
@@ -117,6 +120,16 @@ export function parseOrders(lines: OrderBulkResult[]) {
       SALES_CHANNEL &&
       order?.channelInformation?.channelDefinition?.channelName !==
         SALES_CHANNEL
+    ) {
+      delete orders[oid];
+    }
+  }
+
+  for (const oid of Object.keys(orders)) {
+    const order = orders[oid];
+    if (
+      order.createdAt < DATE_RANGE.start ||
+      order.createdAt > DATE_RANGE.end
     ) {
       delete orders[oid];
     }
