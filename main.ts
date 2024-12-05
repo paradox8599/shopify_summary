@@ -53,7 +53,6 @@ async function main() {
 
   for (let i = 0; i < line_items.length; i++) {
     const line = line_items[i];
-    process.stdout.write(`\r${i}/${line_items.length}`);
     const v = line.variant;
     const p = v.product;
 

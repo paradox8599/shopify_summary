@@ -12,11 +12,13 @@ export function toCSV({
       let val = value[key];
       switch (typeof val) {
         case "string":
-          val = val.replace(/"/g, '"');
+          val = val.replace(/"/g, '""');
           val = `"${val}"`;
           break;
         case "number":
-          val = Number.parseFloat(val.toFixed(2));
+          if (!Number.isInteger(val)) {
+            val = Number.parseFloat(val.toFixed(2));
+          }
       }
       row.push(val);
     }
