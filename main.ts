@@ -8,6 +8,7 @@ import {
 import { pollForBulkResult } from "./src/shopify/bulk";
 import { COUNTRY_CODE, DATE_RANGE_STR, SALES_CHANNEL } from "./src/vars";
 import { toCSV } from "./src/csv";
+import _ from "lodash";
 
 type VariantData = {
   id: string;
@@ -124,6 +125,17 @@ async function main() {
     types_data.reduce((total, type) => total + type.total, 0) /
     types_data.length;
 
+  const order_prices = Object.values(orders)
+    .map((order) =>
+      _.sumBy(order.lineItems, (li) => li.variant.price * li.quantity),
+    )
+    .toSorted((a, b) => a - b);
+
+  const orders_total = _.sum(order_prices);
+
+  const total_order_average = orders_total / order_prices.length;
+  const total_order_median = order_prices[Math.floor(order_prices.length / 2)];
+
   // medians
   // const total_type_median_sum = types_data.reduce(
   //   (total, type) => total + type.median,
@@ -171,16 +183,16 @@ async function main() {
     toCSV({
       values: [
         {
-          // total_type_average_sum: total_type_average_sum,
-          total_type_average: total_type_average,
-          // total_type_median_sum: total_type_median_sum,
-          total_type_median: total_type_median,
+          total_order_average,
+          total_order_median,
+          total_type_average,
+          total_type_median,
         },
       ],
       keys: [
-        // "total_type_average_sum",
+        "total_order_average",
+        "total_order_median",
         "total_type_average",
-        // "total_type_median_sum",
         "total_type_median",
       ],
     }),
