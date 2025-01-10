@@ -153,11 +153,12 @@ async function main() {
   // csv
 
   // create out dir
-  fs.mkdirSync("./out", { recursive: true });
+  const path = `./out/${SHOPIFY.alias}`;
+  fs.mkdirSync(path, { recursive: true });
 
   // NOTE: variants.csv
   fs.writeFileSync(
-    `./out/${SHOPIFY.storeName}/variants${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
+    `${path}/variants${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       keys: [
         "id",
@@ -175,7 +176,7 @@ async function main() {
 
   // NOTE: product_types.csv
   fs.writeFileSync(
-    `./out/${SHOPIFY.storeName}/product_types${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
+    `${path}/product_types${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       keys: ["name", "qty", "total", "median", "average"],
       values: types_data,
@@ -184,7 +185,7 @@ async function main() {
 
   // NOTE: stats.csv
   fs.writeFileSync(
-    `out/${SHOPIFY.storeName}/stats${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
+    `${path}/stats${SALES_CHANNEL ? " " + SALES_CHANNEL : ""}_${DATE_RANGE_STR}.csv`,
     toCSV({
       values: [
         {

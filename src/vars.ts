@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 
 export const SHOPIFY = {
+  alias: process.env.SHOPIFY_ALIAS!,
   storeName: process.env.SHOPIFY_STORE_NAME!,
   adminToken: process.env.SHOPIFY_ADMIN_TOKEN!,
 };
