@@ -19,6 +19,8 @@ export type Product = {
   id: string;
   title: string;
   productType: string;
+  brand?: string | null;
+  metafield: { value: string } | null;
 };
 
 export type Variant = {
@@ -81,6 +83,9 @@ export async function getOrders() {
                         id
                         title
                         productType
+                        metafield(key: "brand", namespace: "custom") {
+                          value
+                        }
                       }
                     }
                   }
@@ -109,6 +114,7 @@ export function parseOrders(lines: OrderBulkResult[]) {
     // line item
     else if (isOrderLineItem(line) && line.variant !== null) {
       line.quantity ??= 0;
+      line.variant.product.brand = line.variant.product.metafield?.value;
       orders[line.__parentId].lineItems.push(line);
     }
   }
@@ -119,7 +125,7 @@ export function parseOrders(lines: OrderBulkResult[]) {
     if (
       SALES_CHANNEL &&
       order?.channelInformation?.channelDefinition?.channelName !==
-      SALES_CHANNEL
+        SALES_CHANNEL
     ) {
       delete orders[oid];
     }

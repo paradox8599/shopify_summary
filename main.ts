@@ -24,6 +24,7 @@ type VariantData = {
   type: string;
   qty: number;
   total: number;
+  brand?: string | null;
 };
 
 type ProductTypeData = {
@@ -72,6 +73,7 @@ async function main() {
       qty: 0,
       total: 0,
       price: v.price,
+      brand: p.brand,
     };
     variant_data.qty += line.quantity;
     variant_data.total += v.price * line.quantity;
@@ -169,6 +171,7 @@ async function main() {
         "qty",
         "total",
         "price",
+        "brand",
       ],
       values: Array.from(variants.values()),
     }),
