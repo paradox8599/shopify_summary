@@ -73,7 +73,7 @@ async function main() {
       qty: 0,
       total: 0,
       price: v.price,
-      brand: p.brand,
+      brand: p.title.split("-")[0]?.trim(),
     };
     variant_data.qty += line.quantity;
     variant_data.total += v.price * line.quantity;
